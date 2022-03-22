@@ -1,31 +1,27 @@
 {
   "name": "kr-sku",
-  "version": "1.0.0",
-  "description": "",
-  "main": "lib/index.js",
+  "private": true,
+  "version": "0.0.0",
+  "main": "./lib/index.umd.js",
+  "module": "./lib/index.es.js",
+  "types": "./lib/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "engines": {
-    "node": ">=12"
-  },
-  "devDependencies": {
-    "eslint": "^8.11.0",
-    "typescript": "^4.5.4"
+    "dev": "vite",
+    "build": "vite build && tsc -p tsconfig.build.json",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@korylee/utils": "^1.0.1"
+    "@korylee/utils": "^0.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.22",
+    "@vitejs/plugin-vue": "^2.2.0",
+    "typescript": "^4.5.4",
+    "vite": "^2.8.0",
+    "vue": "^3.2.25",
+    "vue-tsc": "^0.29.8"
   },
   "peerDependencies": {
-    "@vue/composition-api": "^1.0.0-rc.1",
-    "vue": "^3.0.0-0 || ^2.6.0",
     "vue-demi": "^0.12.4"
-  },
-  "peerDependenciesMeta": {
-    "@vue/composition-api": {
-      "optional": true
-    }
   }
 }

@@ -1,4 +1,4 @@
-import { wrapInArray } from "@korylee/utils";
+import { wrapInArray } from "@korylee/utils/lib/list-helper";
 
 export function calcDescartes(array: any[]): any {
   if (!array?.length) return [];

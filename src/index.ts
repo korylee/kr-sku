@@ -1,7 +1,8 @@
 import { calcDescartes, isSimilarArray, noop } from "./utils";
-import { map, mapSkip, wrapInArray } from "@korylee/utils";
-import type { Ref } from "vue";
+import { map, mapSkip, wrapInArray } from "@korylee/utils/lib/list-helper";
+import type { Ref } from "vue-demi";
 import { computed } from "vue-demi";
+
 type Uid = string;
 interface Variation {
   uid: Uid;
@@ -113,7 +114,7 @@ export function sortVariationOption(items: VariationSku[], variations: Variation
 
 export function useVariationOption<T extends VariationSku>(
   variations: Ref<Variation[]>,
-  VariationSkus: Ref<T[]>,
+  variationSkus: Ref<T[]>,
   createItem?: (uids: Uid[], variations: Variation[]) => T,
   updateItem?: UpdateItemFn<T>,
   needSort: boolean = true
@@ -122,22 +123,22 @@ export function useVariationOption<T extends VariationSku>(
   return {
     descartesUidArray,
     add: (addItems: Variation | Variation[]) => {
-      addVariationOption(VariationSkus.value, {
+      addVariationOption(variationSkus.value, {
         variations: variations.value,
         descartesUidArray: descartesUidArray.value,
         updateItem,
         createItem,
         addItems: wrapInArray(addItems),
       });
-      if (needSort) sortVariationOption(VariationSkus.value, variations.value);
+      if (needSort) sortVariationOption(variationSkus.value, variations.value);
     },
     remove: () => {
-      removeVariationOption<T>(VariationSkus.value, {
+      removeVariationOption<T>(variationSkus.value, {
         variations: variations.value,
         descartesUidArray: descartesUidArray.value,
         updateItem,
       });
-      if (needSort) sortVariationOption(VariationSkus.value, variations.value);
+      if (needSort) sortVariationOption(variationSkus.value, variations.value);
     },
   };
 }
