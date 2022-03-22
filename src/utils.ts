@@ -1,4 +1,6 @@
-import { wrapInArray } from "@korylee/utils/lib/list-helper";
+export function wrapInArray<T>(v: T | T[] | null | undefined): T[] {
+  return v != null && v !== undefined ? (Array.isArray(v) ? v : [v]) : [];
+}
 
 export function calcDescartes(array: any[]): any {
   if (!array?.length) return [];
@@ -7,8 +9,8 @@ export function calcDescartes(array: any[]): any {
   return array.reduce((total, currentValue) => {
     const res: any[] = [];
 
-    total.forEach((t:any) => {
-      currentValue.forEach((cv:any) => {
+    total.forEach((t: any) => {
+      currentValue.forEach((cv: any) => {
         res.push([...wrapInArray(t), cv]);
       });
     });

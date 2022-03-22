@@ -1,5 +1,4 @@
-import { calcDescartes, isSimilarArray, noop } from "./utils";
-import { map, mapSkip, wrapInArray } from "@korylee/utils/lib/list-helper";
+import { calcDescartes, isSimilarArray, noop, wrapInArray } from "./utils";
 import type { Ref } from "vue-demi";
 import { computed } from "vue-demi";
 
@@ -14,9 +13,9 @@ interface Variation {
 }
 
 export function getDescartesUidArray(variations: Variation[]): Uid[][] {
-  const optionsArray = map(variations, ({ options }) =>
-    options?.length ? options.map(({ uid }) => uid) : mapSkip
-  );
+  const optionsArray = variations
+    .filter(({ options }) => !options?.length)
+    .map(({ options }) => options.map(({ uid }) => uid));
   return calcDescartes(optionsArray);
 }
 

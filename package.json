@@ -10,9 +10,6 @@
     "build": "vite build && tsc -p tsconfig.build.json",
     "preview": "vite preview"
   },
-  "dependencies": {
-    "@korylee/utils": "^0.0.2"
-  },
   "devDependencies": {
     "@types/node": "^17.0.22",
     "@vitejs/plugin-vue": "^2.2.0",
