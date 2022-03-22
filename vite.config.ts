@@ -5,17 +5,19 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
   plugins: [vue()],
   build: {
+    watch:{
+      include:['./src']
+    },
     outDir: 'lib',
     lib: {
       entry: './src/index.ts',
-      formats: ['es', 'umd'],
       name:'@korylee/sku',
       fileName: (format) => `index.${format}.js`
     },
     rollupOptions: {
       external: ['vue-demi'],
       output: {
-        global:{
+        globals:{
           'vue-demi': 'vue-demi'
         }
       }

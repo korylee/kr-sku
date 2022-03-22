@@ -1,54 +1,60 @@
 import { calcDescartes, isSimilarArray, noop, wrapInArray } from "./utils";
-import type { Ref } from "vue-demi";
+import type { Ref, ComputedRef } from "vue-demi";
 import { computed } from "vue-demi";
 
-type Uid = string;
-interface Variation {
+export type Uid = string | number;
+interface VariationOption {
   uid: Uid;
-  name: string;
-  options: {
-    uid: Uid;
-    value: string;
-  }[];
+  selected?: boolean;
+  [p: string]: any;
 }
 
-export function getDescartesUidArray(variations: Variation[]): Uid[][] {
+export interface Variation {
+  uid?: Uid;
+  name: string;
+  options: VariationOption[];
+}
+
+export function getDescartesOptions(variations: Variation[]): VariationOption[][] {
   const optionsArray = variations
-    .filter(({ options }) => !options?.length)
-    .map(({ options }) => options.map(({ uid }) => uid));
+    .filter(({ options }) => options?.length)
+    .map(({ options }) => options);
   return calcDescartes(optionsArray);
 }
 
-type UpdateItemFn<T> = (item: T, uids: Uid[], variations: Variation[]) => void;
+type UpdateItemFn<T> = (item: T, options: VariationOption[], variations: Variation[]) => void;
 
-interface VariationSku {
-  uids: Uid[];
+export interface VariationSku {
+  [p: string]: any;
+  options: VariationOption[];
 }
+
+const getUids = (options: VariationOption[]) => options.map((option) => option.uid);
 
 export function removeVariationOption<T extends VariationSku>(
   items: T[],
   {
     variations,
-    descartesUidArray,
+    descartesOptions,
     updateItem = noop,
   }: {
     variations: Variation[];
-    descartesUidArray?: Uid[][];
+    descartesOptions?: VariationOption[][];
     needSort?: boolean;
     updateItem?: UpdateItemFn<T>;
   }
 ): void {
   const removeIndex: number[] = [];
   const memo: boolean[] = [];
-  descartesUidArray = descartesUidArray ?? getDescartesUidArray(variations);
+  descartesOptions = descartesOptions ?? getDescartesOptions(variations);
   items.forEach((variationTableItem, index) => {
     let res = true;
-    (descartesUidArray as Uid[][]).forEach((uids, index) => {
-      const result = isSimilarArray(uids, variationTableItem.uids);
+    (descartesOptions as VariationOption[][]).forEach((options, index) => {
+      const result = isSimilarArray(getUids(options), getUids(variationTableItem.options));
       if (result) {
         if (!memo[index]) res = false;
-        variationTableItem.uids = uids;
-        updateItem?.(variationTableItem, uids, variations);
+        variationTableItem.options = options;
+        updateItem?.(variationTableItem, options, variations);
         memo[index] = true;
       }
     });
@@ -65,34 +71,34 @@ export function addVariationOption<T extends VariationSku>(
   items: T[],
   {
     variations,
-    descartesUidArray,
-    createItem = (uids) => ({ uids } as T),
+     descartesOptions,
+    createItem = (options) => ({ options } as T),
     updateItem = noop,
     addItems = [],
   }: {
     variations: Variation[];
-    descartesUidArray?: Uid[][];
-    createItem?: (uids: Uid[], variations: Variation[]) => T;
+    descartesOptions?: VariationOption[][];
+    createItem?: (options: VariationOption[], variations: Variation[]) => T;
     updateItem?: UpdateItemFn<T>;
     addItems?: Variation[];
   }
 ): void {
-  descartesUidArray = descartesUidArray ?? getDescartesUidArray(variations);
-  descartesUidArray.forEach((uids) => {
+  descartesOptions = descartesOptions ?? getDescartesOptions(variations);
+  descartesOptions.forEach((options) => {
     const findIndex = items.findIndex((variationTableItem) => {
-      const res = isSimilarArray(variationTableItem.uids, uids);
+      const res = isSimilarArray(getUids(variationTableItem.options), getUids(options));
       if (res) {
-        variationTableItem.uids = uids;
-        updateItem?.(variationTableItem, uids, variations);
+        variationTableItem.options = options;
+        updateItem?.(variationTableItem, options, variations);
       }
       return res;
     });
     if (findIndex !== -1) return;
     const isContain = addItems?.length
-      ? uids.some((uid) => addItems.some((item) => uid === item.uid))
+      ? options.some(({ uid }) => addItems.some((item) => uid === item.uid))
       : true;
     if (!isContain) return;
-    const addItem = createItem(uids, variations);
+    const addItem = createItem(options, variations);
     items.push(addItem);
   });
 }
@@ -106,25 +112,33 @@ export function uidsToIndex(uids: Uid[], variations: Variation[]): number[] {
 export function sortVariationOption(items: VariationSku[], variations: Variation[]) {
   items.sort(
     (a, b) =>
-      parseInt(uidsToIndex(a.uids, variations).join("")) -
-      parseInt(uidsToIndex(b.uids, variations).join(""))
+      parseInt(uidsToIndex(getUids(a.options), variations).join("")) -
+      parseInt(uidsToIndex(getUids(b.options), variations).join(""))
   );
 }
+
+const DescartesOptionsWeakMap = new WeakMap<Ref<Variation[]>, ComputedRef<VariationOption[][]>>();
 
 export function useVariationOption<T extends VariationSku>(
   variations: Ref<Variation[]>,
   variationSkus: Ref<T[]>,
-  createItem?: (uids: Uid[], variations: Variation[]) => T,
+  createItem?: (options: VariationOption[], variations: Variation[]) => T,
   updateItem?: UpdateItemFn<T>,
   needSort: boolean = true
 ) {
-  const descartesUidArray = computed(() => getDescartesUidArray(variations.value));
+  const descartesOptions =
+    DescartesOptionsWeakMap.get(variations) ??
+    (() => {
+      const res = computed(() => getDescartesOptions(variations.value));
+      DescartesOptionsWeakMap.set(variations, res);
+      return res;
+    })();
   return {
-    descartesUidArray,
+    descartesOptions,
     add: (addItems: Variation | Variation[]) => {
       addVariationOption(variationSkus.value, {
         variations: variations.value,
-        descartesUidArray: descartesUidArray.value,
+        descartesOptions: descartesOptions.value,
         updateItem,
         createItem,
         addItems: wrapInArray(addItems),
@@ -134,7 +148,7 @@ export function useVariationOption<T extends VariationSku>(
     remove: () => {
       removeVariationOption<T>(variationSkus.value, {
         variations: variations.value,
-        descartesUidArray: descartesUidArray.value,
+        descartesOptions: descartesOptions.value,
         updateItem,
       });
       if (needSort) sortVariationOption(variationSkus.value, variations.value);
