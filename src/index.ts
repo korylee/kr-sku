@@ -50,7 +50,7 @@ export function removeVariationOption<T extends VariationSku>(
   items.forEach((variationTableItem, index) => {
     let res = true;
     (descartesOptions as VariationOption[][]).forEach((options, index) => {
-      const result = isSimilarArray(getUids(options), getUids(variationTableItem.options));
+      const result = isSimilarArray(options, variationTableItem.options);
       if (result) {
         if (!memo[index]) res = false;
         variationTableItem.options = options;
@@ -71,7 +71,7 @@ export function addVariationOption<T extends VariationSku>(
   items: T[],
   {
     variations,
-     descartesOptions,
+    descartesOptions,
     createItem = (options) => ({ options } as T),
     updateItem = noop,
     addItems = [],
@@ -86,7 +86,7 @@ export function addVariationOption<T extends VariationSku>(
   descartesOptions = descartesOptions ?? getDescartesOptions(variations);
   descartesOptions.forEach((options) => {
     const findIndex = items.findIndex((variationTableItem) => {
-      const res = isSimilarArray(getUids(variationTableItem.options), getUids(options));
+      const res = isSimilarArray(variationTableItem.options, options);
       if (res) {
         variationTableItem.options = options;
         updateItem?.(variationTableItem, options, variations);

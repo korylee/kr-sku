@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { ComputedRef, Ref, ref } from "@vue/reactivity";
-import Variation from "./components/Variation.vue";
-import type { Variation as VariationData, VariationSku } from "../lib";
-import { useVariationOption } from "../lib/index.es";
-import { getUuid } from "./utils";
-import { computed } from "@vue/runtime-core";
+import { ComputedRef, Ref, ref } from '@vue/reactivity';
+import Variation from './components/Variation.vue';
+import type { Variation as VariationData, VariationSku } from '@korylee/sku';
+import { useVariationOption } from '@korylee/sku';
+import { getUuid } from './utils';
+import { computed } from '@vue/runtime-core';
+import { log } from 'console';
+import { calcDescartes } from '../src/utils';
 
-const backendVariations = [{ name: "颜色", options: ["red", "green", "blue"] }];
+const backendVariations = [{ name: '颜色', options: ['red', 'green', 'blue'] }];
 const variations: Ref<VariationData[]> = ref([]);
 const filteredVariations: ComputedRef<VariationData[]> = computed(() => {
   return variations.value.filter(({ options }) => options?.length);
@@ -20,29 +22,37 @@ variations.value = backendVariations.map(
         value: option,
         selected: false,
       })),
-      uid: "",
+      uid: '',
     } as unknown as VariationData)
 );
-const skuItems:Ref <VariationSku[] >= ref([]);
+const skuItems: Ref<VariationSku[]> = ref([]);
 const {
   add: addItem,
   remove: removeItem,
   descartesUidArray,
-} = useVariationOption(filteredVariations, skuItems);
+} = useVariationOption(
+  filteredVariations,
+  skuItems,
+  undefined,
+  undefined,
+  false
+);
 const addVariation = () => {
-  variations.value.push({ name: Date.now(), options: [] } as unknown as VariationData);
+  variations.value.push({
+    name: Date.now(),
+    options: [],
+  } as unknown as VariationData);
 };
-const removeVariation =(index:number)=>{
-  variations.value.splice(index,1);
-  removeItem()
-}
+const removeVariation = (index: number) => {
+  variations.value.splice(index, 1);
+  removeItem();
+};
 const skuHeaders = computed(() => {
   return filteredVariations.value;
 });
-
-const selectedSkuItems = computed(() => {
-  return skuItems.value.filter(({ options }) => options.every(({ selected }) => selected));
-});
+console.time('progress')
+console.timeLog('progress',calcDescartes([Array.from({length: 50}),Array.from({length: 50}),Array.from({length: 50})]))
+console.timeEnd('progress')
 </script>
 
 <template>
@@ -57,11 +67,13 @@ const selectedSkuItems = computed(() => {
     <button @click="addVariation" style="width: 100%">+</button>
     <table style="margin-top: 30px">
       <caption>
-        sku 列表
+        sku 列表{{skuItems.length}}
       </caption>
       <tbody>
         <tr>
-          <th scope="col" v-for="(header, index) of skuHeaders" :key="index">{{ header.name }}</th>
+          <th scope="col" v-for="(header, index) of skuHeaders" :key="index">
+            {{ header.name }}
+          </th>
           <th scope="col">库存</th>
         </tr>
         <tr v-for="(skuItem, index) of skuItems" :key="index">
@@ -69,7 +81,7 @@ const selectedSkuItems = computed(() => {
             <input v-model="option.value" />
           </th>
           <td>
-          <input v-model="skuItem.stock" type="number"/>
+            <input v-model="skuItem.stock" type="number" />
           </td>
         </tr>
       </tbody>
