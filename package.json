@@ -22,10 +22,10 @@
   "types": "./lib/index.d.ts",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && tsc -p tsconfig.build.json",
+    "build": "vite build --mode lib && tsc -p tsconfig.build.json",
     "build:example": "vite build",
-    "preview": "vite preview --mode lib",
-    "build:example:preview": "vite build && vite preview"
+    "build:gh-pages": "vite build --mode gh-pages",
+    "preview": "vite build && vite preview"
   },
   "devDependencies": {
     "@types/node": "^17.0.23",
