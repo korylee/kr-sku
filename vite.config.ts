@@ -28,7 +28,6 @@ export default defineConfig(({ mode }) => {
     };
   }
   return {
-    base: mode==='gh-pages'?'sku':'/',
     resolve: {
       alias: {
         "@korylee/sku": resolve(__dirname, "src/index.ts"),

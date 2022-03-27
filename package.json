@@ -24,7 +24,7 @@
     "dev": "vite",
     "build": "vite build --mode lib && tsc -p tsconfig.build.json",
     "build:example": "vite build",
-    "build:gh-pages": "vite build --mode gh-pages",
+    "build:gh-pages": "vite build --base sku",
     "preview": "vite build && vite preview"
   },
   "devDependencies": {
