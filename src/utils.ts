@@ -1,6 +1,4 @@
-export function wrapInArray<T>(v: T | T[] | null | undefined): T[] {
-  return v != null && v !== undefined ? (Array.isArray(v) ? v : [v]) : [];
-}
+import { wrapInArray } from "@korylee/utils";
 
 export function calcDescartes(array: any[]): any {
   if (!array?.length) return [];
